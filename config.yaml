@@ -1,0 +1,30 @@
+CONFIDENCE_THRESHOLD: 0.30
+ANNOUNCE_COOLDOWN: 3.0
+COORD_CHANGE_THRESH: 0.15
+MAX_FRAME_QUEUE: 2
+MAX_SPEECH_QUEUE: 5
+
+PRIORITY_MAP:
+  # Tier-1 — immediate danger
+  person: 1
+  car: 1
+  truck: 1
+  bus: 1
+  motorcycle: 1
+  bicycle: 1
+  # Tier-2 — navigation hazards
+  stairs: 2
+  door: 2
+  traffic light: 2
+  fire hydrant: 2
+  # Tier-3 — obstacles
+  chair: 3
+  bench: 3
+  table: 3
+  couch: 3
+  # Tier-4 — minor items
+  bottle: 4
+  cup: 4
+  book: 4
+  cell phone: 4
+  laptop: 4

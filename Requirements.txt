@@ -1,0 +1,12 @@
+# Drishti-Link — Python Dependencies
+# Install with:  pip install -r requirements.txt
+
+ultralytics>=8.2.0       # YOLOv8 + auto-download of yolov8n.pt
+opencv-python>=4.9.0     # frame capture & annotation
+pyttsx3>=2.90            # offline TTS (no cloud)
+Pillow>=10.3.0           # frame -> Tkinter ImageTk conversion
+numpy>=1.26.0
+PyYAML>=6.0.1  # YAML configuration loader
+
+# Optional (recommended for GPU acceleration)
+# torch>=2.2.0           # auto-installed by ultralytics; add +cu121 for CUDA

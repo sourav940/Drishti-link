@@ -1,0 +1,104 @@
+# Drishti-Link 👁️ — Real-Time Assistive Vision System
+
+> **100% offline · privacy-first · agent-ready**
+> Built for Google Antigravity · Production-grade Python
+
+---
+
+## Architecture
+
+```
+Mobile Camera (IP Webcam / MJPEG)
+        │
+        ▼
+┌─────────────────────────────────────────────────────┐
+│              DrishtiPipeline (Orchestrator)          │
+│                                                     │
+│  Thread A ──► frame_q ──► Thread B ──► result_q    │
+│  FrameProducer            YOLOWorker    │           │
+│  (cv2.VideoCapture)       YOLOv8n      │           │
+│                           Spatial PQ   │           │
+│                           Det. Memory  ▼           │
+│                                   speech_q         │
+│                                       │            │
+│                                  Thread C          │
+│                                  TTSConsumer       │
+│                                  (pyttsx3)         │
+└─────────────────────────────────────────────────────┘
+        │ result_q
+        ▼
+ DrishtiDashboard (Tkinter)
+ High-contrast Black/Neon-Yellow UI
+```
+
+## Quick Start
+
+### 1 — Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 2 — Set up IP Webcam on Android
+1. Install **IP Webcam** (Pavel Khlebovich) from the Play Store.
+2. Start the server — note the URL shown (e.g. `http://192.168.1.100:8080`).
+3. The video stream is at `http://192.168.1.100:8080/video`.
+
+### 3 — Launch the dashboard
+```bash
+python dashboard.py
+```
+Enter your camera URL, press **▶ START VISION**.
+
+### 4 — Headless / agent mode
+```python
+from main import DrishtiPipeline
+
+pipe = DrishtiPipeline("http://192.168.1.100:8080/video")
+pipe.start()
+
+while True:
+    pf = pipe.result_q.get()   # ProcessedFrame
+    for det in pf.detections:
+        print(det.label, det.priority, det.confidence)
+```
+
+---
+
+## Key Design Decisions
+
+| Feature | Implementation |
+|---|---|
+| Multi-threaded | Producer / Worker / TTS Consumer — separate threads, `queue.Queue` handoffs |
+| Low latency | Frame queues capped at 2; oldest frame dropped when full |
+| Spatial Priority Queue | `PRIORITY_MAP` dict — P1 (person/car) → P4 (bottle) |
+| Detection Memory | Per-label `(timestamp, bbox_center)` — re-announce only after 5 s or >15% movement |
+| Offline TTS | `pyttsx3` — zero network calls |
+| YOLO model | `yolov8n.pt` auto-downloaded once, cached locally |
+| UI | Tkinter — no external UI framework required; deep-black / neon-yellow WCAG AAA contrast |
+| Heartbeat | ECG-style animated canvas — instant visual confirmation the pipeline is running |
+
+---
+
+## Extending for Google Antigravity Agents
+
+`DrishtiPipeline` exposes three clean interfaces:
+
+```python
+pipe.result_q   # queue.Queue[ProcessedFrame]  — vision agent reads here
+pipe.speech_q   # queue.Queue[str]             — agent can inject custom TTS
+pipe.stop_evt   # threading.Event              — agent can stop the pipeline
+```
+
+Drop the pipeline into any agent loop with zero modification.
+
+---
+
+## File Structure
+
+```
+drishti_link/
+├── main.py          # Core pipeline (producer, worker, TTS consumer)
+├── dashboard.py     # Tkinter accessibility dashboard
+├── requirements.txt
+└── README.md
+```
